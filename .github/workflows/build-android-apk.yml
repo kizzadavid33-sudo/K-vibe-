@@ -1,0 +1,27 @@
+name: Build K-vibe Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: android-actions/setup-android@v3
+      - run: npm install
+      - run: npm run build
+      - run: bash scripts/prepare-android.sh
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K-vibe-Android-APK-v1.0.0
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
