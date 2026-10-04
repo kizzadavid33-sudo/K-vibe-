@@ -6,13 +6,17 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    permissions: {contents: read}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
+        with:
+          node-version: 22
       - uses: actions/setup-java@v4
-        with: {distribution: temurin, java-version: '21'}
+        with:
+          distribution: temurin
+          java-version: '21'
       - uses: android-actions/setup-android@v3
       - name: Extract K-vibe master
         run: |
@@ -20,9 +24,15 @@ jobs:
           mkdir -p source app
           unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d source
           ROOT=$(find source -name package.json -type f -print -quit | xargs -r dirname)
-          test -n "$ROOT" || (echo "No package.json found inside master ZIP"; exit 1)
+          if [ -z "$ROOT" ]; then
+            echo "No package.json found inside master ZIP; using repository build package."
+            ROOT=$(find source -type f -name index.html -print -quit | xargs -r dirname)
+          fi
+          test -n "$ROOT" || (echo "No web app found inside master ZIP"; exit 1)
           cp -a "$ROOT"/. app/
+          cp package.json app/package.json
           cp capacitor.config.ts app/capacitor.config.ts
+          mkdir -p app/scripts
           cp scripts/prepare-web.js app/scripts/prepare-web.js
       - name: Install and prepare
         working-directory: app
