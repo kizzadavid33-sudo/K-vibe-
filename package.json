@@ -1,0 +1,9 @@
+{
+  "name": "k-vibe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "K-vibe social video app",
+  "scripts": {"build":"node scripts/prepare-web.js","cap:sync":"npx cap sync android","cap:add:android":"npx cap add android"},
+  "dependencies": {"@capacitor/core":"8.5.2"},
+  "devDependencies": {"@capacitor/android":"8.5.2","@capacitor/cli":"8.5.2"}
+}
