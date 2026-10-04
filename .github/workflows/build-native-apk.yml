@@ -1,0 +1,31 @@
+name: Build K-vibe Native APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: Prepare K-vibe web assets only
+        run: |
+          rm -rf android-native/app/src/main/assets
+          mkdir -p android-native/app/src/main/assets
+          unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d /tmp/kvibe
+          cp -a /tmp/kvibe/. android-native/app/src/main/assets/
+          test -f android-native/app/src/main/assets/index.html
+          ! find android-native/app/src/main/assets -type f | grep -Ei 'mirror|husie'
+      - name: Build debug APK
+        working-directory: android-native
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K-vibe-Android-APK-v1.0.0
+          path: android-native/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
