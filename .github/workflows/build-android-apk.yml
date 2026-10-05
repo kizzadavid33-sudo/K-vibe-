@@ -1,54 +1,8 @@
-name: Build K-vibe Android APK
+name: Disabled legacy K-vibe APK
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 jobs:
-  build-apk:
+  disabled:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - uses: android-actions/setup-android@v3
-      - name: Extract K-vibe master
-        run: |
-          rm -rf app source
-          mkdir -p source app
-          unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d source
-          ROOT=$(find source -name package.json -type f -print -quit | xargs -r dirname)
-          if [ -z "$ROOT" ]; then
-            echo "No package.json found inside master ZIP; using repository build package."
-            ROOT=$(find source -type f -name index.html -print -quit | xargs -r dirname)
-          fi
-          test -n "$ROOT" || (echo "No web app found inside master ZIP"; exit 1)
-          cp -a "$ROOT"/. app/
-          cp package.json app/package.json
-          cp capacitor.config.ts app/capacitor.config.ts
-          mkdir -p app/scripts
-          cp scripts/prepare-web.js app/scripts/prepare-web.js
-      - name: Install and prepare
-        working-directory: app
-        run: |
-          npm install
-          npm install @capacitor/core@8.5.2 @capacitor/android@8.5.2 @capacitor/cli@8.5.2
-          node -e "let p=require('./package.json');p.scripts=p.scripts||{};p.scripts.build='node scripts/prepare-web.js';require('fs').writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
-          npm install
-          npm run build
-          npx cap add android
-          npx cap sync android
-      - name: Build debug APK
-        working-directory: app/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
-      - uses: actions/upload-artifact@v4
-        with:
-          name: K-vibe-Android-APK-v1.0.0
-          path: app/android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+      - run: echo "Legacy workflow disabled; use build-native-apk.yml"
