@@ -24,15 +24,35 @@ jobs:
         run: |
           rm -rf android-native/app/src/main/assets /tmp/kvibe
           mkdir -p android-native/app/src/main/assets /tmp/kvibe
+          echo "Checking K-vibe master archive for forbidden Mirror Gram/Husie filenames..."
+          if unzip -Z1 K-vibe-FINAL-MASTER-WITH-MUSIC.zip | grep -Eiq '(^|/)(mirror|husie)([^/]*|/.*)
+      - name: Build debug APK
+        working-directory: android-native
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K-vibe-Android-APK-v1.0.0
+          path: android-native/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+; then
+            echo "Mirror Gram/Husie content detected in K-vibe master archive"
+            unzip -Z1 K-vibe-FINAL-MASTER-WITH-MUSIC.zip | grep -Ei '(^|/)(mirror|husie)([^/]*|/.*)
+      - name: Build debug APK
+        working-directory: android-native
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K-vibe-Android-APK-v1.0.0
+          path: android-native/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+ || true
+            exit 1
+          fi
           unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d /tmp/kvibe
           cp -a /tmp/kvibe/. android-native/app/src/main/assets/
           test -f android-native/app/src/main/assets/index.html
-          if find android-native/app/src/main/assets -type f | grep -Eiq 'mirror|husie'; then
-            echo "Mirror Gram/Husie content detected in K-vibe build assets"
-            exit 1
-          fi
           mkdir -p android-native/app/src/main/res/drawable-nodpi
-          base64 -d android-native/kvibe-logo.b64 > android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
+          base64 -d android-native/app/src/main/assets/kvibe-logo.b64 > android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
           file android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
           test -s android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
       - name: Build debug APK
