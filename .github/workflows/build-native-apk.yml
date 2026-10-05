@@ -14,54 +14,23 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Prepare latest K-vibe web assets
+      - name: Prepare K-vibe web assets
         run: |
           rm -rf android-native/app/src/main/assets /tmp/kvibe
           mkdir -p android-native/app/src/main/assets /tmp/kvibe
           unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d /tmp/kvibe
-          python3 - <<'PY'
-          from pathlib import Path
-          root=Path("/tmp/kvibe")
-          p=root/"index.html"
-          s=p.read_text()
-          s=s.replace("Prefer lighter video loading on mobile data.","Reduce video buffering and release videos sooner when you scroll away. Recommended on mobile data.")
-          p.write_text(s)
-          p=root/"js/app-controller.js"
-          s=p.read_text().replace("./feed-controller.js?v=20261003.1","./feed-controller.js?v=20261005.1")
-          p.write_text(s)
-          p=root/"js/controllers.js"
-          s=p.read_text().replace("./feed-controller.js?v=20261003.1","./feed-controller.js?v=20261005.1")
-          p.write_text(s)
-          p=root/"js/create-controller.js"
-          s=p.read_text().replace("if(file.size>45*1024*1024)","if(file.size>50*1024*1024)")
-          s=s.replace("K-vibe can currently upload videos up to 45 MB. Please choose a smaller video or shorten/compress it before uploading.","K-vibe accepts videos up to 50 MB and 15 minutes long. Please choose a smaller video, or shorten/compress it before uploading.")
-          p.write_text(s)
-          p=root/"js/feed-controller.js"
-          s=p.read_text()
-          s=s.replace("let initialized=false,videos=[],mode='for-you',offset=0;","let initialized=false,videos=[],mode='for-you',offset=0;\\nconst DATA_SAVER_UNLOAD_MS=1500;")
-          s=s.replace("},8000);","},DATA_SAVER_UNLOAD_MS);")
-          marker="addEventListener('k-vibe:route-changed',e=>{"
-          insert="""addEventListener('k-vibe:data-settings-changed',e=>{
- if(!e.detail?.dataSaver)return;
- const active=window.__kvibeActiveFeedVideo;
- document.querySelectorAll('.tiktok-feed-card .tiktok-video').forEach(v=>{
-   if(v===active)return;
-   try{v.pause()}catch{}
-   v.defaultMuted=true;v.muted=true;v.volume=0;
-   if(v.src){v.removeAttribute('src');v.load();}
- });
-});
-"""
-          if "k-vibe:data-settings-changed" not in s:
-              s=s.replace(marker,insert+marker)
-          p.write_text(s)
-          PY
           cp -a /tmp/kvibe/. android-native/app/src/main/assets/
           test -f android-native/app/src/main/assets/index.html
-          ! find android-native/app/src/main/assets -type f | grep -Ei 'mirror|husie'
+          if find android-native/app/src/main/assets -type f | grep -Eiq 'mirror|husie'; then
+            echo "Mirror Gram/Husie content detected in K-vibe build assets"
+            exit 1
+          fi
       - name: Build debug APK
         working-directory: android-native
         run: gradle :app:assembleDebug --no-daemon --stacktrace
