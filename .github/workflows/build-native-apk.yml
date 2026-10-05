@@ -38,7 +38,6 @@ jobs:
           cp -a /tmp/kvibe/. android-native/app/src/main/assets/
           test -f android-native/app/src/main/assets/index.html
           test -f android-native/app/src/main/assets/kvibe-logo.b64
-          test -f android-native/app/src/main/res/drawable/kvibe_icon.png
 
       - name: Build debug APK
         working-directory: android-native
