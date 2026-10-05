@@ -31,6 +31,10 @@ jobs:
             echo "Mirror Gram/Husie content detected in K-vibe build assets"
             exit 1
           fi
+          mkdir -p android-native/app/src/main/res/drawable-nodpi
+          base64 -d android-native/app/src/main/assets/kvibe-logo.b64 > android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
+          file android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
+          test -s android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
       - name: Build debug APK
         working-directory: android-native
         run: gradle :app:assembleDebug --no-daemon --stacktrace
