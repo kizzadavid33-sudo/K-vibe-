@@ -1,24 +1,8 @@
-name: Build K-vibe Google Play AAB
-on: {workflow_dispatch: {}}
+name: Disabled legacy K-vibe AAB
+on:
+  workflow_dispatch:
 jobs:
-  build-aab:
+  disabled:
     runs-on: ubuntu-latest
-    permissions: {contents: read}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
-      - uses: actions/setup-java@v4
-        with: {distribution: temurin, java-version: '21'}
-      - uses: android-actions/setup-android@v3
-      - run: npm install
-      - run: npm run build
-      - run: bash scripts/prepare-android.sh
-      - name: Build release AAB
-        working-directory: android
-        run: ./gradlew bundleRelease --no-daemon --stacktrace
-      - uses: actions/upload-artifact@v4
-        with:
-          name: K-vibe-Google-Play-AAB-v1.0.0-unsigned
-          path: android/app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
+      - run: echo "Legacy workflow disabled; use build-native-apk.yml"
