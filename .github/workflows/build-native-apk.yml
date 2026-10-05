@@ -1,4 +1,5 @@
 name: Build K-vibe Native APK
+
 on:
   workflow_dispatch:
   push:
@@ -25,22 +26,19 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Prepare K-vibe web assets and launcher icon
+      - name: Prepare K-vibe web assets
         run: |
-          rm -rf android-native/app/src/main/assets /tmp/kvibe
           mkdir -p android-native/app/src/main/assets /tmp/kvibe
-          unzip -Z1 K-vibe-FINAL-MASTER-WITH-MUSIC.zip > /tmp/kvibe-files.txt
-          if grep -Eiq '(^|/)(mirror|husie)([^/]*|/.*)$' /tmp/kvibe-files.txt; then
+          echo "Checking K-vibe master archive for forbidden Mirror Gram/Husie filenames..."
+          if unzip -Z1 K-vibe-FINAL-MASTER-WITH-MUSIC.zip | grep -Eiq '(^|/)(mirror|husie)([^/]*|/.*)$'; then
             echo "Mirror Gram/Husie content detected in K-vibe master archive"
             exit 1
           fi
           unzip -q K-vibe-FINAL-MASTER-WITH-MUSIC.zip -d /tmp/kvibe
           cp -a /tmp/kvibe/. android-native/app/src/main/assets/
           test -f android-native/app/src/main/assets/index.html
-          mkdir -p android-native/app/src/main/res/drawable-nodpi
-          base64 -d android-native/kvibe-logo.b64 > android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
-          test -s android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
-          file android-native/app/src/main/res/drawable-nodpi/kvibe_icon.jpg
+          test -f android-native/app/src/main/assets/kvibe-logo.b64
+          test -f android-native/app/src/main/res/drawable/kvibe_icon.png
 
       - name: Build debug APK
         working-directory: android-native
